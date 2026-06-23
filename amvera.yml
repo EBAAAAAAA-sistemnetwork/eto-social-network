@@ -1,0 +1,11 @@
+meta:
+  version: 1.0
+  name: eto-social
+  type: docker
+
+build:
+  dockerfile: Dockerfile
+
+run:
+  port: 8000
+  healthcheck: /api/health
