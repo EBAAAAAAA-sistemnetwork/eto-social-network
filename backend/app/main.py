@@ -1,5 +1,8 @@
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from contextlib import asynccontextmanager
 
 from app.database import init_db
@@ -21,7 +24,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:3000", "*"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -38,3 +41,16 @@ app.include_router(groups.router)
 @app.get("/api/health")
 async def health():
     return {"status": "ok", "app": "ЭТО"}
+
+
+# Serve frontend static files in production
+FRONTEND_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "frontend", "dist")
+if os.path.exists(FRONTEND_DIR):
+    app.mount("/assets", StaticFiles(directory=os.path.join(FRONTEND_DIR, "assets")), name="assets")
+
+    @app.get("/{full_path:path}")
+    async def serve_frontend(full_path: str = ""):
+        file_path = os.path.join(FRONTEND_DIR, full_path) if full_path else os.path.join(FRONTEND_DIR, "index.html")
+        if os.path.isfile(file_path):
+            return FileResponse(file_path)
+        return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))

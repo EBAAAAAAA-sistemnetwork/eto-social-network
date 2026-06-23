@@ -1,5 +1,3 @@
-import { ReactNode } from 'react'
-
 const API_BASE = '/api'
 
 let authToken: string | null = localStorage.getItem('token')
