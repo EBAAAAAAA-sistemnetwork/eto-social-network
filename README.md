@@ -43,3 +43,7 @@ npm run dev
 
 API доступно на http://localhost:8000/api/
 Документация: http://localhost:8000/docs
+
+## Репозиторий
+
+https://github.com/EBAAAAAAA-sistemnetwork/eto-social-network
