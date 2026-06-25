@@ -1,5 +1,5 @@
 node_modules/
-dist/
+# dist/  (allowed for PythonAnywhere deploy)
 __pycache__/
 *.pyc
 *.db
