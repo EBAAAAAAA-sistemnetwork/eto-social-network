@@ -1,36 +1,31 @@
 #!/bin/bash
-set -e
+echo "========================================"
+echo "       ЭТО — Социальная сеть"
+echo "========================================"
+echo ""
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-
-echo "===================================="
-echo "  ЭТО — Социальная сеть"
-echo "===================================="
-echo ""
-
-# Backend
-echo "Запуск backend..."
 cd "$SCRIPT_DIR/backend"
-python3 -m pip install -r requirements.txt -q 2>/dev/null || echo "(зависимости уже установлены)"
-python3 -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload &
-BACKEND_PID=$!
-echo "  Backend: http://localhost:8000 (PID: $BACKEND_PID)"
-echo "  API docs: http://localhost:8000/docs"
 
-# Frontend
-echo "Запуск frontend..."
-cd "$SCRIPT_DIR/frontend"
-npm install --silent 2>/dev/null || echo "(зависимости уже установлены)"
-npm run dev -- --host &
-FRONTEND_PID=$!
-echo "  Frontend: http://localhost:5173"
+python3 -m uvicorn app.main:app --host 0.0.0.0 --port 8000 &
+BACKEND=$!
+sleep 2
+
+ssh -o ServerAliveInterval=60 \
+    -o StrictHostKeyChecking=no \
+    -o UserKnownHostsFile=/dev/null \
+    -R 80:localhost:8000 serveo.net 2>&1 | while read line; do
+    echo "$line"
+done &
+TUNNEL=$!
+sleep 5
 
 echo ""
-echo "===================================="
-echo "  Открой http://localhost:5173"
-echo "  Нажми Ctrl+C чтобы остановить"
-echo "===================================="
-echo ""
+echo "========================================"
+echo "  Сайт запущен!"
+echo "  Для ссылки смотри выше ↑"
+echo "  Ctrl+C — остановить"
+echo "========================================"
 
-trap "kill $BACKEND_PID $FRONTEND_PID 2>/dev/null; echo 'Остановлено'" EXIT
+trap "kill $BACKEND $TUNNEL 2>/dev/null; exit" INT TERM
 wait

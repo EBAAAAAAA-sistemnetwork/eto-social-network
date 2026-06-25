@@ -41,3 +41,23 @@ app.include_router(groups.router)
 @app.get("/api/health")
 async def health():
     return {"status": "ok", "app": "ЭТО"}
+
+
+FRONTEND_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "frontend", "dist")
+ASSETS_DIR = os.path.join(FRONTEND_DIR, "assets")
+
+if os.path.exists(ASSETS_DIR):
+    app.mount("/assets", StaticFiles(directory=ASSETS_DIR), name="assets")
+
+
+@app.get("/{full_path:path}")
+async def serve_frontend(full_path: str = ""):
+    if not os.path.exists(FRONTEND_DIR):
+        return {"detail": "Not Found"}
+    if full_path.startswith("api/"):
+        from fastapi.responses import JSONResponse
+        return JSONResponse({"detail": "Not Found"}, status_code=404)
+    file_path = os.path.join(FRONTEND_DIR, full_path) if full_path else os.path.join(FRONTEND_DIR, "index.html")
+    if os.path.isfile(file_path):
+        return FileResponse(file_path)
+    return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
